@@ -5,9 +5,14 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 export default function AdminPage() {
-  const { data: session, status } = useSession();
+  // Ambil session dengan cara aman
+  const sessionData = useSession();
+  const session = sessionData?.data;
+  const status = sessionData?.status;
+
   const [list, setList] = useState([]);
 
+  // Fetch data undangan hanya jika sudah login
   useEffect(() => {
     if (status === "authenticated") {
       fetch("/api/invitations")
@@ -17,10 +22,12 @@ export default function AdminPage() {
     }
   }, [status]);
 
+  // Loading state
   if (status === "loading") {
     return <div>Memeriksa otentikasi...</div>;
   }
 
+  // Redirect jika belum login
   if (status === "unauthenticated") {
     if (typeof window !== "undefined") {
       window.location.href = "/login";
@@ -39,12 +46,16 @@ export default function AdminPage() {
       <section>
         <h3>Undangan</h3>
         <ul>
-          {list.map((i) => (
-            <li key={i.id}>
-              {i.nama_pria} &amp; {i.nama_wanita} —{" "}
-              <Link href={`/invitation/${i.slug}`}>{i.slug}</Link>
-            </li>
-          ))}
+          {list.length > 0 ? (
+            list.map((i) => (
+              <li key={i.id}>
+                {i.nama_pria} &amp; {i.nama_wanita} —{" "}
+                <Link href={`/invitation/${i.slug}`}>{i.slug}</Link>
+              </li>
+            ))
+          ) : (
+            <li>Tidak ada undangan ditemukan.</li>
+          )}
         </ul>
       </section>
     </div>
