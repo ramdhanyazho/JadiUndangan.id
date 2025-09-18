@@ -1,0 +1,1 @@
+export default function Page(){ return (<div><h2>Selamat datang di JadiUndangan.id v3</h2><p>Buka <a href='/admin'>/admin</a> untuk dashboard (butuh login)</p></div>) }

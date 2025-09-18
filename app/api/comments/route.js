@@ -1,0 +1,3 @@
+import { NextResponse } from 'next/server';
+const { getDb } = require('../../../lib/db');
+export async function POST(req){ const { slug, nama, pesan } = await req.json(); const db = getDb(); return new Promise((resolve)=>{ db.get('SELECT id FROM invitations WHERE slug=?',[slug],(er,row)=>{ if(!row) return resolve(new NextResponse(JSON.stringify({error:'invitation not found'}),{status:404})); db.run('INSERT INTO comments (invitation_id,nama,pesan) VALUES (?,?,?)',[row.id,nama,pesan], function(err){ if(err) resolve(new NextResponse(JSON.stringify({error:err.message}),{status:500})); else resolve(new NextResponse(JSON.stringify({ok:true}),{status:201})); }); }); }); }

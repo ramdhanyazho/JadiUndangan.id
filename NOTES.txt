@@ -1,0 +1,3 @@
+I replaced visible brand strings with "JadiUndangan.id" in the new Next.js app skeleton.
+For a more complete conversion of templates and features, you'd iterate on the frontend components,
+migrate templates from PHP views into React components, and port server-side logic to API routes.

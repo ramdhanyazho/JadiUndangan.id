@@ -1,0 +1,58 @@
+-- Turso schema for JadiUndangan.id v3
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE,
+  password_hash TEXT,
+  role TEXT DEFAULT 'admin',
+  subscription_expires_at DATETIME,
+  trial_ends_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS invitations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id_user INTEGER DEFAULT 0,
+  nama_pria TEXT,
+  nama_wanita TEXT,
+  tanggal TEXT,
+  tempat TEXT,
+  alamat TEXT,
+  slug TEXT UNIQUE,
+  theme_id INTEGER DEFAULT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  invitation_id INTEGER,
+  judul TEXT,
+  tanggal TEXT,
+  lokasi TEXT
+);
+CREATE TABLE IF NOT EXISTS guests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  invitation_id INTEGER,
+  nama TEXT,
+  hadir INTEGER DEFAULT 0,
+  komentar TEXT
+);
+CREATE TABLE IF NOT EXISTS gallery (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  invitation_id INTEGER,
+  url TEXT,
+  media_type TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS themes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  json TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  invitation_id INTEGER,
+  nama TEXT,
+  pesan TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+COMMIT;
