@@ -1,15 +1,12 @@
+// app/api/gallery/upload/route.js
+
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import formidable from "formidable";
 import fs from "fs";
 import { getDb } from "@/lib/db";
-
-export const config = {
-  api: {
-    bodyParser: false, // disable Next.js body parser
-  },
-  runtime: "nodejs", // force Node runtime (not Edge)
-};
 
 export async function POST(req) {
   const form = formidable({ multiples: false });
@@ -30,7 +27,7 @@ export async function POST(req) {
       }
 
       try {
-        // Read file
+        // Read file content
         const buffer = fs.readFileSync(file.filepath);
         const ext = (file.originalFilename || "").split(".").pop();
         const name = `gallery/${Date.now()}-${Math.random()
@@ -44,7 +41,7 @@ export async function POST(req) {
           contentType: file.mimetype || "application/octet-stream",
         });
 
-        // Save ke Turso DB
+        // Simpan ke Turso DB
         const db = getDb();
         db.run(
           "INSERT INTO gallery (invitation_id, url, media_type) VALUES (?,?,?)",

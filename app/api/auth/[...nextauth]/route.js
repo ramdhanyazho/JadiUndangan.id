@@ -1,7 +1,9 @@
+// app/api/auth/[...nextauth]/route.js
+
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt";
-import { db } from "@/lib/db"; // koneksi Turso
+import { getDb } from "@/lib/db"; // gunakan getDb() bukan 'db'
 
 const handler = NextAuth({
   providers: [
@@ -16,11 +18,14 @@ const handler = NextAuth({
           throw new Error("Email dan password wajib diisi");
         }
 
-        // Cek user di Turso
-        const row = await db.get(
-          `SELECT * FROM users WHERE email = ?`,
-          [credentials.email]
-        );
+        // Ambil user dari Turso
+        const db = getDb();
+        const row = await new Promise((resolve, reject) => {
+          db.get(`SELECT * FROM users WHERE email = ?`, [credentials.email], (err, user) => {
+            if (err) reject(err);
+            else resolve(user);
+          });
+        });
 
         if (!row) {
           throw new Error("User tidak ditemukan");
