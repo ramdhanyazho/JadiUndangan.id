@@ -1,34 +1,69 @@
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-const { getDb } = require('../../../../../lib/db');
-import bcrypt from 'bcrypt';
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { compare } from "bcrypt";
+import { db } from "@/lib/db"; // koneksi Turso
 
-const options = {
+const handler = NextAuth({
   providers: [
     CredentialsProvider({
-      id: 'credentials',
-      name: 'Credentials',
-      credentials: { email: { label: 'Email', type: 'text' }, password: { label: 'Password', type: 'password' } },
-      async authorize(credentials, req) {
-        const db = getDb();
-        return new Promise((resolve, reject) => {
-          db.get('SELECT * FROM users WHERE email = ?', [credentials.email], async (err, user) => {
-            if (err || !user) return resolve(null);
-            const match = await bcrypt.compare(credentials.password, user.password_hash);
-            if (!match) return resolve(null);
-            resolve({ id: user.id, email: user.email, role: user.role });
-          });
-        });
-      }
-    })
-  ],
-  session: { strategy: 'jwt' },
-  callbacks: {
-    async jwt({ token, user }){ if(user) token.user = user; return token; },
-    async session({ session, token }){ session.user = token.user; return session; }
-  },
-  secret: process.env.NEXTAUTH_SECRET || 'devsecret'
-};
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email dan password wajib diisi");
+        }
 
-const handler = NextAuth(options);
+        // Cek user di Turso
+        const row = await db.get(
+          `SELECT * FROM users WHERE email = ?`,
+          [credentials.email]
+        );
+
+        if (!row) {
+          throw new Error("User tidak ditemukan");
+        }
+
+        const valid = await compare(credentials.password, row.password_hash);
+        if (!valid) {
+          throw new Error("Password salah");
+        }
+
+        return {
+          id: row.id,
+          email: row.email,
+          role: row.role,
+        };
+      },
+    }),
+  ],
+
+  session: {
+    strategy: "jwt",
+  },
+
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id;
+        session.user.role = token.role;
+      }
+      return session;
+    },
+  },
+
+  pages: {
+    signIn: "/login",
+  },
+});
+
 export { handler as GET, handler as POST };
