@@ -16,6 +16,6 @@
     "formidable": "^2.1.2",
     "jsonwebtoken": "^9.0.0",
     "@vercel/blob": "^0.23.1",
-    "@turso/database": "^0.2.0"
+    "@libsql/client": "^0.6.0"
   }
 }
